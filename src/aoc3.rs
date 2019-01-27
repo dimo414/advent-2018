@@ -50,8 +50,12 @@ fn check_claim(claim: &claim::Claim, fabric: &grid::Grid) -> bool {
 
 fn read_data() -> Vec<claim::Claim> {
     let reader = BufReader::new(File::open("data/day3.txt").expect("Cannot open"));
-
-    return reader.lines().map(|l| l.unwrap().parse::<claim::Claim>().unwrap()).collect();
+    // http://xion.io/post/code/rust-iter-patterns.html suggests .collect()-ing the Vec<Result>
+    // but it seems to be more verbose (in this case) than just unwrapping in the map(), perhaps
+    // because std::io::Lines is an iterator. We also don't really need the temporary Vec.
+    //let lines: Result<Vec<_>, _> = reader.lines().collect();
+    //lines.unwrap().iter().map(|l| l.parse().unwrap()).collect()
+    reader.lines().map(|l| l.unwrap().parse().unwrap()).collect()
 }
 
 #[cfg(test)]
@@ -86,7 +90,7 @@ mod tests {
     #[test]
     fn check_claims() {
         let claims: Vec<_> = ["#1 @ 1,3: 4x4", "#2 @ 3,1: 4x4", "#3 @ 5,5: 2x2"].iter()
-            .map(|s| s.parse::<claim::Claim>().unwrap()).collect();
+            .map(|s| s.parse().unwrap()).collect();
         let mut fabric = grid::Grid::new(8, 8);
 
         for claim in &claims {
@@ -107,7 +111,7 @@ mod tests {
 // Initially considered a 2D array, like
 // https://www.reddit.com/r/rust/comments/3l0dau/dynamic_heapallocated_multidimensional_arrays/cv2fn5y
 // but the type signatures were odd, at best.
-pub mod grid {
+mod grid {
     use std::fmt;
     use std::fmt::Write;
     use std::ops::Index;
@@ -153,21 +157,23 @@ pub mod grid {
 
     impl fmt::Display for Grid {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            // See also https://stackoverflow.com/q/30320083#comment92146674_30320443
             let mut out = String::new();
             for i in 0..self.grid.len() {
                 let value = match self.grid[i] {
                     v if v < 10 => v.to_string(),
                     _ => "*".to_string(),
                 };
-                write!(&mut out, " {}", value).unwrap();
+                write!(&mut out, " {}", value).expect("writing to string");
                 if i % self.width == self.width - 1 {
-                    write!(&mut out, "\n").unwrap();
+                    write!(&mut out, "\n").expect("writing to string");
                 }
             }
             write!(f, "{}", out)
         }
     }
 
+    // https://blog.guillaume-gomez.fr/articles/2017-03-09+Little+tour+of+multiple+iterators+implementation+in+Rust
     pub struct GridIter<'a> {
         inner: &'a Grid,
         pos: usize,
@@ -230,7 +236,7 @@ pub mod grid {
     }
 }
 
-pub mod claim {
+mod claim {
     use std::error;
     use std::fmt;
     use std::num;
@@ -336,7 +342,7 @@ pub mod claim {
 
         #[test]
         fn examples_part1() {
-            let claim: Claim = "#123 @ 3,2: 5x4".parse::<>().unwrap();
+            let claim: Claim = "#123 @ 3,2: 5x4".parse().unwrap();
             assert_eq!(claim, Claim { id: 123, x: 3, y: 2, w: 5, h: 4});
         }
     }

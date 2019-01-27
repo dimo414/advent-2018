@@ -1,7 +1,11 @@
+#[macro_use] extern crate lazy_static;
+extern crate regex;
+
 use std::env;
 
 mod aoc1;
 mod aoc2;
+mod aoc3;
 
 fn main() {
     println!(); // split build output from runtime output
@@ -14,6 +18,7 @@ fn main() {
     match day {
         1 => aoc1::advent(),
         2 => aoc2::advent(),
+        3 => aoc3::advent(),
         x => {
             eprintln!("Day {} hasn't happened yet.", x);
             ::std::process::exit(1);

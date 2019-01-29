@@ -8,6 +8,7 @@ mod aoc1;
 mod aoc2;
 mod aoc3;
 mod aoc4;
+mod aoc5;
 
 fn main() {
     println!(); // split build output from runtime output
@@ -22,6 +23,7 @@ fn main() {
         2 => aoc2::advent(),
         3 => aoc3::advent(),
         4 => aoc4::advent(),
+        5 => aoc5::advent(),
         x => {
             eprintln!("Day {} hasn't happened yet.", x);
             ::std::process::exit(1);

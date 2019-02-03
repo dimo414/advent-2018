@@ -6,13 +6,15 @@ use std::io::{BufRead, BufReader};
 
 pub fn advent() {
     let coords = read_data();
-    let labels = label_points(coords);
+    let labels = label_points(&coords);
     let grid = coverage_for_points(&labels);
 
-    println!("Final:\n{}", grid);
-
+    // takes up ~360 columns
+    //println!("Final:\n{}", grid);
     println!("Largest Area: {}", find_largest_enclosed_area(&labels, &grid));
 
+    let grid = sum_distances(&coords);
+    println!("Less than 10k: {}", count_lessthan(&grid, 10000));
 }
 
 
@@ -73,7 +75,7 @@ fn populate_distances(grid: &mut taxicab::Grid<Coordinate>, start_point: taxicab
     }
 }
 
-fn label_points(points: Vec<taxicab::Point>) -> BTreeMap<String, taxicab::Point> {
+fn label_points(points: &Vec<taxicab::Point>) -> BTreeMap<String, taxicab::Point> {
     let mut l = 'A' as u32 - 1;
     let mut l_gen = || {
         l+=1; char::from_u32(l).expect("should be valid").to_string() };
@@ -146,6 +148,23 @@ fn find_largest_enclosed_area(labels: &BTreeMap<String, taxicab::Point>, grid: &
     largest.expect("present").1
 }
 
+fn sum_distances(coords: &Vec<taxicab::Point>) -> taxicab::Grid<u32> {
+    let mut grid = taxicab::grid();
+    for coord in coords.iter() {
+        grid.expand_bounds(*coord);
+    }
+
+    for point in grid.points_iter() {
+        let sum: u32 = coords.iter().map(|c| c.distance(point)).sum();
+        grid.insert(point, sum);
+    }
+    grid
+}
+
+fn count_lessthan(grid: &taxicab::Grid<u32>, limit: u32) -> u32 {
+    grid.points_iter().map(|p| if *grid.get(p).unwrap() < limit { 1 } else { 0 }).sum()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -177,11 +196,11 @@ mod tests {
     }
 
     #[test]
-    fn example() {
+    fn example_pt1() {
         let coords: Vec<_> = vec!((1, 1), (1, 6), (8, 3), (3, 4), (5, 5), (8, 9)).iter()
             .map(|t| taxicab::point(t.0, t.1)).collect();
 
-        let labels = label_points(coords);
+        let labels = label_points(&coords);
         let grid = coverage_for_points(&labels);
 
         // Note that, except for (3,4) and (5,5), the areas are actually infinite. If the grid's
@@ -195,9 +214,22 @@ mod tests {
 
         assert_eq!(find_largest_enclosed_area(&labels, &grid), 17);
     }
+
+    #[test]
+    fn example_pt2() {
+        let coords: Vec<_> = vec!((1, 1), (1, 6), (8, 3), (3, 4), (5, 5), (8, 9)).iter()
+            .map(|t| taxicab::point(t.0, t.1)).collect();
+
+        let grid = sum_distances(&coords);
+
+        assert_eq!(count_lessthan(&grid, 32), 16);
+    }
 }
 
+// https://en.wikipedia.org/wiki/Taxicab_geometry
 // Referenced https://docs.rs/rusttype/0.5.2/src/rusttype/geometry.rs.html
+// Other resources:
+//   https://crates.io/crates/euclid - https://doc.servo.org/src/euclid/point.rs.html
 mod taxicab {
     use std::collections::HashMap;
     use std::collections::hash_map::Entry;
@@ -271,12 +303,12 @@ mod taxicab {
 
         fn from_str(s: &str) -> Result<Self, PointError> {
             lazy_static! {
-                static ref RE: Regex = Regex::new(r"^\(?([0-9]+), ([0-9]+)\)?$").unwrap();
+                static ref RE: Regex = Regex::new(r"^\(?([^(,]+),([^),]+)\)?$").unwrap();
             }
 
             if let Some(caps) = RE.captures(s) {
-                let x: i32 = caps.get(1).expect("valid capture group").as_str().parse()?;
-                let y: i32 = caps.get(2).expect("valid capture group").as_str().parse()?;
+                let x: i32 = caps.get(1).expect("valid capture group").as_str().trim().parse()?;
+                let y: i32 = caps.get(2).expect("valid capture group").as_str().trim().parse()?;
                 return Ok(point(x, y));
             }
 
@@ -376,6 +408,13 @@ mod taxicab {
             let b = point(8, 3);
             assert_eq!(a.distance(b), 9);
             assert_eq!(a.distance(b), b.distance(a));
+        }
+
+        #[test]
+        fn parse_point() {
+            assert_eq!("4, 4".parse::<Point>(), Ok(point(4, 4)));
+            assert_eq!("(40,30)".parse::<Point>(), Ok(point(40, 30)));
+            assert_eq!("(-3, -5)".parse::<Point>(), Ok(point(-3, -5)));
         }
 
         #[test]

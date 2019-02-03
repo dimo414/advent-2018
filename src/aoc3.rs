@@ -166,7 +166,7 @@ mod grid {
                 };
                 write!(&mut out, " {}", value).expect("writing to string");
                 if i % self.width == self.width - 1 {
-                    write!(&mut out, "\n").expect("writing to string");
+                    out.push('\n');
                 }
             }
             write!(f, "{}", out)

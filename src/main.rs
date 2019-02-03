@@ -1,3 +1,4 @@
+#[macro_use] extern crate itertools;
 #[macro_use] extern crate lazy_static;
 extern crate chrono;
 extern crate regex;
@@ -9,6 +10,7 @@ mod aoc2;
 mod aoc3;
 mod aoc4;
 mod aoc5;
+mod aoc6;
 
 fn main() {
     println!(); // split build output from runtime output
@@ -24,6 +26,7 @@ fn main() {
         3 => aoc3::advent(),
         4 => aoc4::advent(),
         5 => aoc5::advent(),
+        6 => aoc6::advent(),
         x => {
             eprintln!("Day {} hasn't happened yet.", x);
             ::std::process::exit(1);

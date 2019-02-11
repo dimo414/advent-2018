@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::fs;
 
 pub fn advent() {
-    let original = read_data().trim().to_string();
+    let original = read_data();
     let trimmed = trim_all_pairs(&original);
     println!("Count: {}", trimmed.len());
 
@@ -14,7 +14,7 @@ pub fn advent() {
 }
 
 fn read_data() -> String {
-    fs::read_to_string("data/day5.txt").expect("Cannot open")
+    fs::read_to_string("data/day5.txt").expect("Cannot open").trim().to_string()
 }
 
 fn is_pair(a: char, b: char) -> bool {

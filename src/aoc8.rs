@@ -84,7 +84,7 @@ mod tests {
     fn values() {
         assert_eq!(metadata_value(&[0, 3, 10, 11, 12]), 33); // B
         assert_eq!(metadata_value(&[0, 1, 99]), 99); // D
-        assert_eq!(metadata_value(&[1, 1, 0, 1, 99, 2]), 2); // C
+        assert_eq!(metadata_value(&[1, 1, 0, 1, 99, 2]), 0); // C
         assert_eq!(metadata_value(&[2, 3, 0, 3, 10, 11, 12, 1, 1, 0, 1, 99, 2, 1, 1, 2]), 66);
     }
 }

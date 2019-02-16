@@ -283,15 +283,15 @@ mod event {
             if let Some(caps) = RE_SHIFT.captures(s) {
                 let timestamp = parse_timestamp(&caps)?;
                 let id: u32 = caps.get(2).expect("valid capture group").as_str().parse()?;
-                return Ok(Event { timestamp: timestamp, event: EventType::StartsShift(id) });
+                return Ok(Event { timestamp, event: EventType::StartsShift(id) });
             }
             if let Some(caps) = RE_ASLEEP.captures(s) {
                 let timestamp = parse_timestamp(&caps)?;
-                return Ok(Event { timestamp: timestamp, event: EventType::FallsAsleep });
+                return Ok(Event { timestamp, event: EventType::FallsAsleep });
             }
             if let Some(caps) = RE_AWAKE.captures(s) {
                 let timestamp = parse_timestamp(&caps)?;
-                return Ok(Event { timestamp: timestamp, event: EventType::WakesUp });
+                return Ok(Event { timestamp, event: EventType::WakesUp });
             }
 
             Err(EventError::Malformed("No Match".into()))

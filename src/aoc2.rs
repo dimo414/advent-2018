@@ -44,7 +44,7 @@ fn strip_noncommon(id1: &str, id2: &str) -> String {
 fn find_one_char_diff(ids: &Vec<String>) -> String {
     for id1 in ids.iter() {
         for id2 in ids.iter() {
-            assert!(id1.len() == id2.len());
+            assert_eq!(id1.len(), id2.len());
 
             let common = strip_noncommon(id1, id2);
             if common.len() == id1.len() - 1 {

@@ -124,7 +124,7 @@ mod grid {
 
     impl Grid {
         pub fn new(width: usize, height: usize) -> Grid {
-            Grid { grid: vec![0; width * height], width: width }
+            Grid { grid: vec![0; width * height], width }
         }
 
         pub fn get(&self, x: usize, y: usize) -> Option<&i32> {
@@ -332,7 +332,7 @@ mod claim {
                 caps.get(i).expect("valid capture group").as_str().parse::<usize>();
             let h = get_as_int(&caps, 5)?;
 
-            Ok(Claim { id: id, x: x, y: y, w: w, h: h })
+            Ok(Claim { id, x, y, w, h })
         }
     }
 

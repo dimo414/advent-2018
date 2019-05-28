@@ -2,6 +2,7 @@ use std::collections::HashSet;
 use std::cmp;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use crate::euclid::{point,Point,Vector};
 
 const REAL_DATA: &str = "data/day10.txt";
 #[allow(dead_code)]
@@ -124,7 +125,7 @@ mod star {
     #[cfg(test)]
     mod tests {
         use super::*;
-        use super::super::{point,vector};
+        use crate::euclid::{point,vector};
 
         #[test]
         fn parse() {
@@ -144,106 +145,10 @@ mod star {
 }
 pub use self::star::Star;
 
-mod euclid {
-    use std::fmt;
-    use std::ops::{Add,AddAssign};
-    use regex::Regex;
-    use std::str::FromStr;
-
-    #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-    pub struct Point {
-        pub x: i32,
-        pub y: i32,
-    }
-
-    #[inline]
-    pub fn point(x: i32, y: i32) -> Point {
-        Point { x, y }
-    }
-
-    impl Add<Vector> for Point {
-        type Output = Point;
-
-        fn add(self, vec: Vector) -> Point {
-            point(self.x + vec.x, self.y + vec.y)
-        }
-    }
-
-    impl AddAssign<Vector> for Point {
-        fn add_assign(&mut self, vec: Vector) {
-            *self = point(self.x + vec.x, self.y + vec.y);
-        }
-    }
-
-    impl FromStr for Point {
-        type Err = String;
-
-        fn from_str(s: &str) -> Result<Self, String> {
-            lazy_static! {
-                static ref RE: Regex = Regex::new(r"^([^,]+),([^,]+)$").unwrap();
-            }
-
-            let caps = RE.captures(s).ok_or("no match")?;
-            let x: i32 = caps.get(1).expect("valid capture group").as_str().trim().parse().map_err(|_| "bad parse")?;
-            let y: i32 = caps.get(2).expect("valid capture group").as_str().trim().parse().map_err(|_| "bad parse")?;
-            return Ok(point(x, y));
-        }
-    }
-
-    impl fmt::Display for Point {
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            write!(f, "({}, {})", self.x, self.y)
-        }
-    }
-
-    #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-    pub struct Vector {
-        pub x: i32,
-        pub y: i32,
-    }
-
-    #[inline]
-    pub fn vector(x: i32, y: i32) -> Vector {
-        Vector { x, y }
-    }
-
-    impl FromStr for Vector {
-        type Err = String;
-
-        fn from_str(s: &str) -> Result<Self, String> {
-            // Just reuse point's parser
-            let p: Point = s.parse()?;
-            Ok(vector(p.x, p.y))
-        }
-    }
-
-    impl fmt::Display for Vector {
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            write!(f, "({}, {})", self.x, self.y)
-        }
-    }
-
-    #[cfg(test)]
-    mod tests {
-        use super::*;
-
-        #[test]
-        fn parse() {
-            assert_eq!("3, 4".parse::<Point>(), Ok(point(3, 4)));
-            assert_eq!("-3,-4".parse::<Point>(), Ok(point(-3, -4)));
-        }
-
-        #[test]
-        fn add() {
-            assert_eq!(point(1, 0) + vector(2, 3), point(3, 3));
-        }
-    }
-}
-pub use self::euclid::{point,Point,vector,Vector};
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::euclid::{point,vector};
 
     #[test]
     fn read_file() {

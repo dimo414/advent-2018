@@ -5,6 +5,8 @@ extern crate regex;
 
 use std::env;
 
+mod euclid;
+
 mod aoc1;
 mod aoc2;
 mod aoc3;

@@ -85,18 +85,18 @@ fn find_message(stars: Vec<Star>) -> (u32, String) {
 }
 
 mod star {
-    use super::Point;
+    use super::{Point, Vector};
     use regex::Regex;
     use std::str::FromStr;
 
     #[derive(Debug, Eq, PartialEq)]
     pub struct Star {
         pub position: Point,
-        velocity: Point,
+        velocity: Vector,
     }
 
     impl Star {
-        pub fn new(position: Point, velocity: Point) -> Star {
+        pub fn new(position: Point, velocity: Vector) -> Star {
             Star { position, velocity }
         }
 
@@ -115,7 +115,7 @@ mod star {
 
             let caps = RE.captures(s).ok_or("no match")?;
             let position: Point = caps.get(1).expect("valid capture group").as_str().parse()?;
-            let velocity: Point = caps.get(2).expect("valid capture group").as_str().parse()?;
+            let velocity: Vector = caps.get(2).expect("valid capture group").as_str().parse()?;
 
             Ok(Star{ position, velocity })
         }
@@ -124,21 +124,21 @@ mod star {
     #[cfg(test)]
     mod tests {
         use super::*;
-        use super::super::point;
+        use super::super::{point,vector};
 
         #[test]
         fn parse() {
             assert_eq!("position=< 9,  1> velocity=< 0,  2>".parse::<Star>(),
-                       Ok(Star { position: point(9, 1), velocity: point(0, 2) } ));
+                       Ok(Star { position: point(9, 1), velocity: vector(0, 2) } ));
         }
 
         #[test]
         fn stepping() {
-            let star = Star::new(point(10, 4), point(-3, -2));
+            let star = Star::new(point(10, 4), vector(-3, -2));
             let star = star.step();
-            assert_eq!(star, Star::new(point(7, 2), point(-3, -2)));
+            assert_eq!(star, Star::new(point(7, 2), vector(-3, -2)));
             let star = star.step();
-            assert_eq!(star, Star::new(point(4, 0), point(-3, -2)));
+            assert_eq!(star, Star::new(point(4, 0), vector(-3, -2)));
         }
     }
 }
@@ -161,22 +161,17 @@ mod euclid {
         Point { x, y }
     }
 
-    impl Add for Point {
-    type Output = Point;
+    impl Add<Vector> for Point {
+        type Output = Point;
 
-    fn add(self, other: Point) -> Point {
-        Point {
-            x: self.x + other.x,
-            y: self.y + other.y,
+        fn add(self, vec: Vector) -> Point {
+            point(self.x + vec.x, self.y + vec.y)
         }
     }
-}
-    impl AddAssign for Point {
-        fn add_assign(&mut self, other: Point) {
-            *self = Point {
-                x: self.x + other.x,
-                y: self.y + other.y,
-            };
+
+    impl AddAssign<Vector> for Point {
+        fn add_assign(&mut self, vec: Vector) {
+            *self = point(self.x + vec.x, self.y + vec.y);
         }
     }
 
@@ -201,7 +196,32 @@ mod euclid {
         }
     }
 
+    #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+    pub struct Vector {
+        pub x: i32,
+        pub y: i32,
+    }
 
+    #[inline]
+    pub fn vector(x: i32, y: i32) -> Vector {
+        Vector { x, y }
+    }
+
+    impl FromStr for Vector {
+        type Err = String;
+
+        fn from_str(s: &str) -> Result<Self, String> {
+            // Just reuse point's parser
+            let p: Point = s.parse()?;
+            Ok(vector(p.x, p.y))
+        }
+    }
+
+    impl fmt::Display for Vector {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "({}, {})", self.x, self.y)
+        }
+    }
 
     #[cfg(test)]
     mod tests {
@@ -212,9 +232,14 @@ mod euclid {
             assert_eq!("3, 4".parse::<Point>(), Ok(point(3, 4)));
             assert_eq!("-3,-4".parse::<Point>(), Ok(point(-3, -4)));
         }
+
+        #[test]
+        fn add() {
+            assert_eq!(point(1, 0) + vector(2, 3), point(3, 3));
+        }
     }
 }
-pub use self::euclid::{point,Point};
+pub use self::euclid::{point,Point,vector,Vector};
 
 #[cfg(test)]
 mod tests {
@@ -228,7 +253,7 @@ mod tests {
     #[test]
     fn bounding() {
         let points = vec!(point(-2,5), point(-3, 2), point(4, -2));
-        let stars: Vec<_> = points.into_iter().map(|p| Star::new(p, point(4,5))).collect();
+        let stars: Vec<_> = points.into_iter().map(|p| Star::new(p, vector(4,5))).collect();
         assert_eq!(bounding_box(&stars), (point(-3,-2), point(4,5)));
     }
 
@@ -247,7 +272,7 @@ mod tests {
     fn to_str() {
         let points = vec!(
             point(-2,-2), point(-1, -1), point(0, 0), point(1, 1), point(1, -1), point(-1, 1));
-        let stars: Vec<_> = points.into_iter().map(|p| Star::new(p, point(4,5))).collect();
+        let stars: Vec<_> = points.into_iter().map(|p| Star::new(p, vector(4,5))).collect();
         assert_eq!(stars_to_string(bounding_box(&stars), &stars),
                    "......\n.#....\n..#.#.\n...#..\n..#.#.\n......\n");
     }

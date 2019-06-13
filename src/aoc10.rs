@@ -89,6 +89,7 @@ mod star {
     use super::{Point, Vector};
     use regex::Regex;
     use std::str::FromStr;
+    use crate::error::ParseError;
 
     #[derive(Debug, Eq, PartialEq)]
     pub struct Star {
@@ -107,16 +108,16 @@ mod star {
     }
 
     impl FromStr for Star {
-        type Err = String;
+        type Err = ParseError;
 
-        fn from_str(s: &str) -> Result<Self, String> {
+        fn from_str(s: &str) -> Result<Self, ParseError> {
             lazy_static! {
                 static ref RE: Regex = Regex::new(r"^position=<(.*)> velocity=<(.*)>$").unwrap();
             }
 
-            let caps = RE.captures(s).ok_or("no match")?;
-            let position: Point = caps.get(1).expect("valid capture group").as_str().parse()?;
-            let velocity: Vector = caps.get(2).expect("valid capture group").as_str().parse()?;
+            let caps = regex_captures!(RE, s)?;
+            let position: Point = capture_group!(caps, 1).parse()?;
+            let velocity: Vector = capture_group!(caps, 2).parse()?;
 
             Ok(Star{ position, velocity })
         }

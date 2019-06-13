@@ -45,29 +45,28 @@ fn scheduling(deps: &Vec<Dep>, concurrency: u32, modifier: u32) -> u32 {
 }
 
 mod dep {
-    use regex::{Match, Regex};
+    use regex::Regex;
     use std::str::FromStr;
+    use crate::error::ParseError;
 
     #[derive(Debug, Eq, PartialEq)]
     pub struct Dep(pub char, pub char);
 
     impl FromStr for Dep {
-        type Err = String;
+        type Err = ParseError;
 
-        fn from_str(s: &str) -> Result<Self, String> {
+        fn from_str(s: &str) -> Result<Self, ParseError> {
             lazy_static! {
                 static ref RE: Regex =
                     Regex::new(r"^Step (.) must be finished before step (.) can begin.$").unwrap();
             }
 
             // https://stackoverflow.com/a/30811312/113632
-            let char_from_group = |group: Option<Match>|
-                group.expect("valid capture group").as_str().chars().next()
-                    .expect("group matches one char");
+            let first_char = |s: &str| s.chars().next().expect("empty string");
 
-            let caps = RE.captures(s).ok_or("no match")?;
-            let first: char = char_from_group(caps.get(1));
-            let then: char = char_from_group(caps.get(2));
+            let caps = regex_captures!(RE, s)?;
+            let first: char = first_char(capture_group!(caps, 1));
+            let then: char = first_char(capture_group!(caps, 2));
             return Ok(Dep(first, then));
         }
     }

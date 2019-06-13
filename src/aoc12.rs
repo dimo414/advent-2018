@@ -20,8 +20,7 @@ fn read_data() -> Pots {
     let reader = BufReader::new(File::open("data/day12.txt").expect("Cannot open"));
     let lines: Vec<String> = reader.lines().map(|l| l.unwrap()).collect();
 
-    let initial_state = STATE_RE.captures(&lines[0]).expect("must match")
-        .get(1).expect("valid capture group").as_str();
+    let initial_state = capture_group!(STATE_RE.captures(&lines[0]).expect("must match"), 1);
     Pots::new(initial_state, &lines[2..])
 }
 
@@ -47,8 +46,8 @@ fn rules(lines: &[String]) -> HashSet<[bool;5]> {
     let mut set = HashSet::new();
     for line in lines {
         let caps = RULE_RE.captures(&line).expect("must match");
-        let window = window(caps.get(1).expect("valid capture group").as_str());
-        let is_alive = caps.get(2).expect("valid capture group").as_str();
+        let window = window(capture_group!(caps, 1));
+        let is_alive = capture_group!(caps, 2);
         if to_bool(is_alive.chars().next().unwrap()) {
             set.insert(window);
         }

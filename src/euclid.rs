@@ -1,8 +1,12 @@
+// Referenced https://docs.rs/rusttype/0.5.2/src/rusttype/geometry.rs.html
+// Other resources:
+//   https://crates.io/crates/euclid - https://doc.servo.org/src/euclid/point.rs.html
 mod point {
     use std::fmt;
     use std::ops::{Add,AddAssign};
     use regex::Regex;
     use std::str::FromStr;
+    use crate::error::ParseError;
 
     #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
     pub struct Point {
@@ -13,6 +17,14 @@ mod point {
     #[inline]
     pub fn point(x: i32, y: i32) -> Point {
         Point { x, y }
+    }
+
+    impl Point {
+        pub fn grid_distance(&self, other: Point) -> u32 {
+            let dx = self.x - other.x;
+            let dy = self.y - other.y;
+            (dx.abs() + dy.abs()) as u32
+        }
     }
 
     impl Add<super::Vector> for Point {
@@ -30,16 +42,17 @@ mod point {
     }
 
     impl FromStr for Point {
-        type Err = String;
+        type Err = ParseError;
 
-        fn from_str(s: &str) -> Result<Self, String> {
+        fn from_str(s: &str) -> Result<Self, ParseError> {
             lazy_static! {
-                static ref RE: Regex = Regex::new(r"^([^,]+),([^,]+)$").unwrap();
+                // r"^([^,]+),([^,]+)$" would be more strict - worth it?
+                static ref RE: Regex = Regex::new(r"^\(?([^(,]+),([^),]+)\)?$").unwrap();
             }
 
-            let caps = RE.captures(s).ok_or("no match")?;
-            let x: i32 = caps.get(1).expect("valid capture group").as_str().trim().parse().map_err(|_| "bad parse")?;
-            let y: i32 = caps.get(2).expect("valid capture group").as_str().trim().parse().map_err(|_| "bad parse")?;
+            let caps = regex_captures!(RE, s)?;
+            let x: i32 = capture_group!(caps, 1).trim().parse()?;
+            let y: i32 = capture_group!(caps, 2).trim().parse()?;
             return Ok(point(x, y));
         }
     }
@@ -58,6 +71,25 @@ mod point {
         fn parse() {
             assert_eq!("3, 4".parse::<Point>(), Ok(point(3, 4)));
             assert_eq!("-3,-4".parse::<Point>(), Ok(point(-3, -4)));
+            assert_eq!("(40,30)".parse::<Point>(), Ok(point(40, 30)));
+            assert_eq!("(-3, -5)".parse::<Point>(), Ok(point(-3, -5)));
+
+            assert!("abc".parse::<Point>().is_err());
+        }
+
+        #[test]
+        fn grid_distances() {
+            let check_distance = |p1: Point, p2: Point, d: u32| {
+                assert_eq!(p1.grid_distance(p2), d);
+                assert_eq!(p2.grid_distance(p1), d);
+            };
+
+            check_distance(point(1,1), point(1,1), 0);
+            check_distance(point(1,1), point(1,2), 1);
+            check_distance(point(1,1), point(2,2), 2);
+            check_distance(point(1,1), point(1,5), 4);
+            check_distance(point(1,1), point(8,3), 9);
+            check_distance(point(1,1), point(-1,-1), 4);
         }
 
         #[test]
@@ -71,6 +103,7 @@ pub use self::point::{Point,point};
 mod vector {
     use std::fmt;
     use std::str::FromStr;
+    use crate::error::ParseError;
 
     #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
     pub struct Vector {
@@ -84,9 +117,9 @@ mod vector {
     }
 
     impl FromStr for Vector {
-        type Err = String;
+        type Err = ParseError;
 
-        fn from_str(s: &str) -> Result<Self, String> {
+        fn from_str(s: &str) -> Result<Self, ParseError> {
             // Just reuse point's parser
             let p: super::Point = s.parse()?;
             Ok(vector(p.x, p.y))

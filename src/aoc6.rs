@@ -3,6 +3,7 @@ use std::char;
 use std::fmt;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use crate::euclid::{point,Point};
 
 pub fn advent() {
     let coords = read_data();
@@ -17,8 +18,7 @@ pub fn advent() {
     println!("Less than 10k: {}", count_lessthan(&grid, 10000));
 }
 
-
-fn read_data() -> Vec<taxicab::Point> {
+fn read_data() -> Vec<Point> {
     let reader = BufReader::new(File::open("data/day6.txt").expect("Cannot open"));
 
     reader.lines().map(|l| l.unwrap().parse().unwrap()).collect()
@@ -43,13 +43,13 @@ impl fmt::Display for Coordinate {
     }
 }
 
-fn populate_distances(grid: &mut taxicab::Grid<Coordinate>, start_point: taxicab::Point) {
+fn populate_distances(grid: &mut taxicab::Grid<Coordinate>, start_point: Point) {
     match grid.get(start_point) {
         Some(Coordinate::Labeled(label)) => {
             // eager copy so the reference isn't passed into the closure
             let label = label.to_string();
             for point in grid.points_iter() {
-                let distance = point.distance(start_point);
+                let distance = point.grid_distance(start_point);
                 grid.get_entry(point)
                     .and_modify(|e| {
                         match e {
@@ -75,14 +75,14 @@ fn populate_distances(grid: &mut taxicab::Grid<Coordinate>, start_point: taxicab
     }
 }
 
-fn label_points(points: &Vec<taxicab::Point>) -> BTreeMap<String, taxicab::Point> {
+fn label_points(points: &Vec<Point>) -> BTreeMap<String, Point> {
     let mut l = 'A' as u32 - 1;
     let mut l_gen = || {
         l+=1; char::from_u32(l).expect("should be valid").to_string() };
     points.iter().map(|p| (l_gen(), *p)).collect()
 }
 
-fn coverage_for_points(labels: &BTreeMap<String, taxicab::Point>) -> taxicab::Grid<Coordinate> {
+fn coverage_for_points(labels: &BTreeMap<String, Point>) -> taxicab::Grid<Coordinate> {
     let mut grid = taxicab::grid();
     for (label, point) in labels.iter() {
         grid.insert(*point, Coordinate::Labeled(label.clone()));
@@ -96,7 +96,7 @@ fn coverage_for_points(labels: &BTreeMap<String, taxicab::Point>) -> taxicab::Gr
     grid
 }
 
-fn compute_area(grid: &taxicab::Grid<Coordinate>, label_point: taxicab::Point) -> u32 {
+fn compute_area(grid: &taxicab::Grid<Coordinate>, label_point: Point) -> u32 {
     let mut sum = 0;
     let label = match grid.get(label_point).expect("absent") {
         Coordinate::Labeled(s) => s,
@@ -115,7 +115,7 @@ fn compute_area(grid: &taxicab::Grid<Coordinate>, label_point: taxicab::Point) -
     sum
 }
 
-fn find_largest_enclosed_area(labels: &BTreeMap<String, taxicab::Point>, grid: &taxicab::Grid<Coordinate>) -> u32 {
+fn find_largest_enclosed_area(labels: &BTreeMap<String, Point>, grid: &taxicab::Grid<Coordinate>) -> u32 {
     let mut enclosed_labels: HashSet<_> = labels.keys().collect();
     let mut remove_label = |c: Option<&Coordinate>| {
         match c.expect("within bounds and already populated") {
@@ -127,12 +127,12 @@ fn find_largest_enclosed_area(labels: &BTreeMap<String, taxicab::Point>, grid: &
 
     let (min, max) = grid.bounds().expect("No points in empty grid");
     for x in {min.x..max.x} {
-        remove_label(grid.get(taxicab::point(x, min.y)));
-        remove_label(grid.get(taxicab::point(x, max.y)));
+        remove_label(grid.get(point(x, min.y)));
+        remove_label(grid.get(point(x, max.y)));
     }
     for y in {min.y..max.y} {
-        remove_label(grid.get(taxicab::point(min.x, y)));
-        remove_label(grid.get(taxicab::point(max.x, y)));
+        remove_label(grid.get(point(min.x, y)));
+        remove_label(grid.get(point(max.x, y)));
     }
 
     let mut largest = None;
@@ -148,14 +148,14 @@ fn find_largest_enclosed_area(labels: &BTreeMap<String, taxicab::Point>, grid: &
     largest.expect("present").1
 }
 
-fn sum_distances(coords: &Vec<taxicab::Point>) -> taxicab::Grid<u32> {
+fn sum_distances(coords: &Vec<Point>) -> taxicab::Grid<u32> {
     let mut grid = taxicab::grid();
     for coord in coords.iter() {
         grid.expand_bounds(*coord);
     }
 
     for point in grid.points_iter() {
-        let sum: u32 = coords.iter().map(|c| c.distance(point)).sum();
+        let sum: u32 = coords.iter().map(|c| c.grid_distance(point)).sum();
         grid.insert(point, sum);
     }
     grid
@@ -177,40 +177,40 @@ mod tests {
     #[test]
     fn distances() {
         let mut grid: taxicab::Grid<Coordinate> = taxicab::grid();
-        grid.insert(taxicab::point(2, 2), Coordinate::Labeled("A".into()));
-        grid.insert(taxicab::point(4, 2), Coordinate::Labeled("B".into()));
-        grid.insert(taxicab::point(1, 1), Coordinate::Equidistant(10));
-        grid.insert(taxicab::point(4, 4), Coordinate::Equidistant(10));
+        grid.insert(point(2, 2), Coordinate::Labeled("A".into()));
+        grid.insert(point(4, 2), Coordinate::Labeled("B".into()));
+        grid.insert(point(1, 1), Coordinate::Equidistant(10));
+        grid.insert(point(4, 4), Coordinate::Equidistant(10));
 
-        populate_distances(&mut grid, taxicab::point(2, 2));
-        assert_eq!(grid.get(taxicab::point(1, 1)), Some(&Coordinate::Nearest("A".into(), 2)));
-        assert_eq!(grid.get(taxicab::point(4, 4)), Some(&Coordinate::Nearest("A".into(), 4)));
+        populate_distances(&mut grid, point(2, 2));
+        assert_eq!(grid.get(point(1, 1)), Some(&Coordinate::Nearest("A".into(), 2)));
+        assert_eq!(grid.get(point(4, 4)), Some(&Coordinate::Nearest("A".into(), 4)));
 
-        populate_distances(&mut grid, taxicab::point(4, 2));
-        assert_eq!(grid.get(taxicab::point(1, 1)),  Some(&Coordinate::Nearest("A".into(), 2)));
-        assert_eq!(grid.get(taxicab::point(4, 4)),  Some(&Coordinate::Nearest("B".into(), 2)));
-        assert_eq!(grid.get(taxicab::point(3, 2)),  Some(&Coordinate::Equidistant(1)));
-        assert_eq!(grid.get(taxicab::point(3, 3)), Some(&Coordinate::Equidistant(2)));
-        assert_eq!(grid.get(taxicab::point(2, 2)),  Some(&Coordinate::Labeled("A".into())));
-        assert_eq!(grid.get(taxicab::point(4, 2)),  Some(&Coordinate::Labeled("B".into())));
+        populate_distances(&mut grid, point(4, 2));
+        assert_eq!(grid.get(point(1, 1)),  Some(&Coordinate::Nearest("A".into(), 2)));
+        assert_eq!(grid.get(point(4, 4)),  Some(&Coordinate::Nearest("B".into(), 2)));
+        assert_eq!(grid.get(point(3, 2)),  Some(&Coordinate::Equidistant(1)));
+        assert_eq!(grid.get(point(3, 3)), Some(&Coordinate::Equidistant(2)));
+        assert_eq!(grid.get(point(2, 2)),  Some(&Coordinate::Labeled("A".into())));
+        assert_eq!(grid.get(point(4, 2)),  Some(&Coordinate::Labeled("B".into())));
     }
 
     #[test]
     fn example_pt1() {
         let coords: Vec<_> = vec!((1, 1), (1, 6), (8, 3), (3, 4), (5, 5), (8, 9)).iter()
-            .map(|t| taxicab::point(t.0, t.1)).collect();
+            .map(|t| point(t.0, t.1)).collect();
 
         let labels = label_points(&coords);
         let grid = coverage_for_points(&labels);
 
         // Note that, except for (3,4) and (5,5), the areas are actually infinite. If the grid's
         // bounds change these values will also need to be updated.
-        assert_eq!(compute_area(&grid, taxicab::point(1, 1)), 7);
-        assert_eq!(compute_area(&grid, taxicab::point(1, 6)), 9);
-        assert_eq!(compute_area(&grid, taxicab::point(8, 3)), 12);
-        assert_eq!(compute_area(&grid, taxicab::point(3, 4)), 9);
-        assert_eq!(compute_area(&grid, taxicab::point(5, 5)), 17);
-        assert_eq!(compute_area(&grid, taxicab::point(8, 9)), 10);
+        assert_eq!(compute_area(&grid, point(1, 1)), 7);
+        assert_eq!(compute_area(&grid, point(1, 6)), 9);
+        assert_eq!(compute_area(&grid, point(8, 3)), 12);
+        assert_eq!(compute_area(&grid, point(3, 4)), 9);
+        assert_eq!(compute_area(&grid, point(5, 5)), 17);
+        assert_eq!(compute_area(&grid, point(8, 9)), 10);
 
         assert_eq!(find_largest_enclosed_area(&labels, &grid), 17);
     }
@@ -218,7 +218,7 @@ mod tests {
     #[test]
     fn example_pt2() {
         let coords: Vec<_> = vec!((1, 1), (1, 6), (8, 3), (3, 4), (5, 5), (8, 9)).iter()
-            .map(|t| taxicab::point(t.0, t.1)).collect();
+            .map(|t| point(t.0, t.1)).collect();
 
         let grid = sum_distances(&coords);
 
@@ -227,94 +227,13 @@ mod tests {
 }
 
 // https://en.wikipedia.org/wiki/Taxicab_geometry
-// Referenced https://docs.rs/rusttype/0.5.2/src/rusttype/geometry.rs.html
-// Other resources:
-//   https://crates.io/crates/euclid - https://doc.servo.org/src/euclid/point.rs.html
 mod taxicab {
     use std::collections::HashMap;
     use std::collections::hash_map::Entry;
     use std::cmp;
-    use std::error;
     use std::fmt;
     use std::fmt::Write;
-    use std::num;
-    use std::result::Result;
-    use std::str::FromStr;
-    use regex::Regex;
-
-    #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-    pub struct Point {
-        pub x: i32,
-        pub y: i32,
-    }
-
-    #[inline]
-    pub fn point(x: i32, y: i32) -> Point {
-        Point { x, y }
-    }
-
-    impl Point {
-        pub fn distance(&self, other: Point) -> u32 {
-            let dx = self.x - other.x;
-            let dy = self.y - other.y;
-            (dx.abs() + dy.abs()) as u32
-        }
-    }
-
-    impl fmt::Display for Point {
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            write!(f, "({}, {})", self.x, self.y)
-        }
-    }
-
-    #[derive(Debug, Eq, PartialEq)]
-    pub enum PointError {
-        Malformed(String),
-        InvalidInt(num::ParseIntError),
-    }
-
-    impl fmt::Display for PointError {
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            match *self {
-                PointError::Malformed(ref str) => write!(f, "Malformed {}!", str),
-                PointError::InvalidInt(ref err) => err.fmt(f),
-            }
-        }
-    }
-
-    impl error::Error for PointError {
-        fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-            match *self {
-                PointError::Malformed(_) => None,
-                PointError::InvalidInt(ref err) => Some(err),
-            }
-        }
-    }
-
-    impl From<num::ParseIntError> for PointError {
-        fn from(err: num::ParseIntError) -> PointError {
-            PointError::InvalidInt(err)
-        }
-    }
-
-
-    impl FromStr for Point {
-        type Err = PointError;
-
-        fn from_str(s: &str) -> Result<Self, PointError> {
-            lazy_static! {
-                static ref RE: Regex = Regex::new(r"^\(?([^(,]+),([^),]+)\)?$").unwrap();
-            }
-
-            if let Some(caps) = RE.captures(s) {
-                let x: i32 = caps.get(1).expect("valid capture group").as_str().trim().parse()?;
-                let y: i32 = caps.get(2).expect("valid capture group").as_str().trim().parse()?;
-                return Ok(point(x, y));
-            }
-
-            Err(PointError::Malformed("No Match".into()))
-        }
-    }
+    use crate::euclid::{point,Point};
 
     fn points_between(min: Point, max: Point) -> impl Iterator<Item = Point> {
         assert!(min.x <= max.x);
@@ -401,21 +320,6 @@ mod taxicab {
     mod tests {
         use std::collections::hash_map::Entry::{Occupied, Vacant};
         use super::*;
-
-        #[test]
-        fn tc_point() {
-            let a = point(1, 1);
-            let b = point(8, 3);
-            assert_eq!(a.distance(b), 9);
-            assert_eq!(a.distance(b), b.distance(a));
-        }
-
-        #[test]
-        fn parse_point() {
-            assert_eq!("4, 4".parse::<Point>(), Ok(point(4, 4)));
-            assert_eq!("(40,30)".parse::<Point>(), Ok(point(40, 30)));
-            assert_eq!("(-3, -5)".parse::<Point>(), Ok(point(-3, -5)));
-        }
 
         #[test]
         fn grid_str() {

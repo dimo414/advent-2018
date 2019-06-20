@@ -8,14 +8,14 @@ mod point {
     use std::str::FromStr;
     use crate::error::ParseError;
 
-    #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+    #[derive(Copy, Clone, PartialEq, Eq, Hash)]
     pub struct Point {
         pub x: i32,
         pub y: i32,
     }
 
     #[inline]
-    pub fn point(x: i32, y: i32) -> Point {
+    pub const fn point(x: i32, y: i32) -> Point {
         Point { x, y }
     }
 
@@ -24,6 +24,14 @@ mod point {
             let dx = self.x - other.x;
             let dy = self.y - other.y;
             (dx.abs() + dy.abs()) as u32
+        }
+    }
+
+    impl Add<&super::Vector> for Point {
+        type Output = Point;
+
+        fn add(self, vec: &super::Vector) -> Point {
+            point(self.x + vec.x, self.y + vec.y)
         }
     }
 
@@ -57,9 +65,15 @@ mod point {
         }
     }
 
-    impl fmt::Display for Point {
+    impl fmt::Debug for Point {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             write!(f, "({}, {})", self.x, self.y)
+        }
+    }
+
+    impl fmt::Display for Point {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "{:?}", self)
         }
     }
 
@@ -105,14 +119,14 @@ mod vector {
     use std::str::FromStr;
     use crate::error::ParseError;
 
-    #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+    #[derive(Copy, Clone, PartialEq, Eq, Hash)]
     pub struct Vector {
         pub x: i32,
         pub y: i32,
     }
 
     #[inline]
-    pub fn vector(x: i32, y: i32) -> Vector {
+    pub const fn vector(x: i32, y: i32) -> Vector {
         Vector { x, y }
     }
 
@@ -126,9 +140,15 @@ mod vector {
         }
     }
 
-    impl fmt::Display for Vector {
+    impl fmt::Debug for Vector {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             write!(f, "({}, {})", self.x, self.y)
+        }
+    }
+
+    impl fmt::Display for Vector {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "{:?}", self)
         }
     }
 

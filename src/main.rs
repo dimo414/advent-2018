@@ -15,6 +15,33 @@ macro_rules! capture_group {
   ($caps:expr, $group:expr) => { $caps.get($group).expect("valid capture group").as_str() };
 }
 
+#[allow(unused_macros)]
+macro_rules! with_dollar_sign {
+    ($($body:tt)*) => {
+        macro_rules! __with_dollar_sign { $($body)* }
+        __with_dollar_sign!($);
+    }
+}
+
+// https://stackoverflow.com/a/56663823/113632
+#[cfg(test)]
+macro_rules! parameterized_test {
+    ($name:ident, $args:pat, $body:tt) => {
+        with_dollar_sign! {
+            ($d:tt) => {
+                macro_rules! $name {
+                    ($d($d pname:ident: $d values:expr,)*) => {
+                        mod $name {
+                            use super::*;
+                            $d(
+                                #[test]
+                                fn $d pname() {
+                                    let $args = $d values;
+                                    $body
+                                }
+                            )*
+                        }}}}}}}
+
 mod error;
 mod euclid;
 
@@ -32,6 +59,7 @@ mod aoc11;
 mod aoc12;
 mod aoc13;
 mod aoc14;
+mod aoc15;
 
 fn main() {
     println!(); // split build output from runtime output
@@ -56,6 +84,7 @@ fn main() {
         12 => aoc12::advent(),
         13 => aoc13::advent(),
         14 => aoc14::advent(),
+        15 => aoc15::advent(),
         x => {
             eprintln!("Day {} hasn't happened yet.", x);
             ::std::process::exit(1);

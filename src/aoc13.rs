@@ -126,7 +126,7 @@ mod track {
                     '+' => { tracks.insert(coord, TrackType::Intersection); },
                     ' ' => {},
                     '\n' => { coord = point(-1, coord.y + 1); },
-                    x => panic!("Unexpected char: {}", x),
+                    _ => { return Err(format!("Unexpected char {} at {}", c, coord)); },
                 }
                 coord = point(coord.x + 1, coord.y);
             }

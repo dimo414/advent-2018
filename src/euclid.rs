@@ -25,6 +25,12 @@ mod point {
             let dy = self.y - other.y;
             (dx.abs() + dy.abs()) as u32
         }
+
+        pub fn in_bounds(&self, min: Point, max: Point) -> bool {
+            assert!(min.x <= max.x);
+            assert!(min.y <= max.y);
+            min.x <= self.x && min.y <= self.y && max.x >= self.x && max.y >= self.y
+        }
     }
 
     impl Add<&super::Vector> for Point {
@@ -104,6 +110,15 @@ mod point {
             check_distance(point(1,1), point(1,5), 4);
             check_distance(point(1,1), point(8,3), 9);
             check_distance(point(1,1), point(-1,-1), 4);
+        }
+
+        #[test]
+        fn in_bounds_() {
+            let zero_zero = point(0, 0);
+            let two_two = point(2, 2);
+            let five_six = point(5, 6);
+            assert!(two_two.in_bounds(zero_zero, two_two));
+            assert!(!five_six.in_bounds(zero_zero, two_two));
         }
 
         #[test]

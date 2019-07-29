@@ -43,6 +43,7 @@ macro_rules! parameterized_test {
                         }}}}}}}
 
 mod error;
+mod device;
 mod euclid;
 
 mod aoc1;

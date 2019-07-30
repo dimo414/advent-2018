@@ -8,7 +8,7 @@ mod point {
     use std::str::FromStr;
     use crate::error::ParseError;
 
-    #[derive(Copy, Clone, PartialEq, Eq, Hash)]
+    #[derive(Copy, Clone, PartialOrd, Ord, PartialEq, Eq, Hash)]
     pub struct Point {
         pub x: i32,
         pub y: i32,
@@ -37,6 +37,14 @@ mod point {
         type Output = Point;
 
         fn add(self, vec: &super::Vector) -> Point {
+            point(self.x + vec.x, self.y + vec.y)
+        }
+    }
+
+    impl Add<super::Vector> for &Point {
+        type Output = Point;
+
+        fn add(self, vec: super::Vector) -> Point {
             point(self.x + vec.x, self.y + vec.y)
         }
     }

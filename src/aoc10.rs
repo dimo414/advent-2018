@@ -5,7 +5,7 @@ use std::io::{BufRead, BufReader};
 use crate::euclid::{point,Point,Vector};
 
 const REAL_DATA: &str = "data/day10.txt";
-#[allow(dead_code)]
+#[cfg(test)]
 const TEST_DATA: &str = "data/day10-example.txt";
 
 pub fn advent() {

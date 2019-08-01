@@ -1,9 +1,9 @@
 use std::fs;
 use regex::Regex;
-use crate::device::{Device,Opcode};
+use crate::device::{Device,Instruction,Opcode,Program};
 
 pub fn advent() {
-    let (samples, instructions) = read_data();
+    let (samples, raw_instructions) = read_data();
 
     let mut three_plus = 0;
     for Sample(before, instruction, after) in samples.iter() {
@@ -17,17 +17,20 @@ pub fn advent() {
 
     let mut finder = Finder::new();
     for Sample(before, instruction, after) in samples.iter() {
-        let count = finder.consider(*before, *instruction, *after);
+        finder.consider(*before, *instruction, *after);
         // Could break early if we're already solved, but (with the current structure) checking
         // isn't particularly cheap.
     }
     let opcodes = finder.solution();
 
-    let mut device = Device::new([0,0,0,0]);
-    for instr in instructions {
-        let opcode = opcodes.get(&instr[0]).expect("Invalid opcode num");
-        device.exec(*opcode, instr[1], instr[2], instr[3]);
-    }
+    let instructions: Vec<_> = raw_instructions.iter().map(
+        |instr| {
+            let opcode = opcodes.get(&instr[0]).expect("Invalid opcode num");
+            Instruction::new(*opcode, instr[1], instr[2], instr[3])
+        }
+    ).collect();
+    let mut device = Device::new([0,0,0,0,0,0]);
+    device.run_program(&Program::create(instructions));
     println!("Device state: {:?}", device.get_registers());
 }
 
@@ -58,6 +61,14 @@ fn to_arr(input: &str) -> Result<[usize; 4], String> {
 
 #[derive(Debug, Eq, PartialEq)]
 struct Sample([usize; 4], [usize; 4], [usize; 4]);
+
+impl Sample {
+    fn resize(input: &[usize; 4]) -> [usize; 6] {
+        let mut output = [0; 6];
+        output[..4].clone_from_slice(input);
+        output
+    }
+}
 
 fn parse_sample(input: &str) -> Result<Sample, String> {
     lazy_static! {
@@ -132,9 +143,13 @@ mod opcode_finder {
             let codes = self.candidates.get_mut(&opcode_num).expect("Invalid code");
 
             if codes.len() > 1 {
+                let input_state = Sample::resize(&input_state);
+                let output_state = Sample::resize(&output_state);
                 for opcode in codes.clone() {
                     let mut device = Device::new(input_state);
-                    device.exec(opcode, input_a, input_b, output);
+                    let instructions = vec!(Instruction::new(opcode, input_a, input_b, output));
+
+                    device.run_program(&Program::create(instructions));
                     if device.get_registers() != output_state {
                         assert!(codes.remove(&opcode));
                     }

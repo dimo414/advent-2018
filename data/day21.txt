@@ -1,32 +1,48 @@
+// Registers 1-6 are denoted by A-F; B is (in this program) the IP
+
+// A: Goal
+// B: j (and tmp)
+// C: IP
+// D: i
+// E: tmp
+// F: Result
+
+// Computes a series of results and checks them against the A register, halting
+// if matched. The values end up cycling, so the program will run forever if
+// an invalid value (such as 0) is used for A.
+//
+// See compute_last_f_value in aoc21.rs for a reimplementation of this program
+// that halts at the end of the cycle.
+
 #ip 2
-seti 123 0 5
-bani 5 456 5
-eqri 5 72 5
-addr 5 2 2
-seti 0 0 2
-seti 0 9 5
-bori 5 65536 3
-seti 7586220 4 5
-bani 3 255 1
-addr 5 1 5
-bani 5 16777215 5
-muli 5 65899 5
-bani 5 16777215 5
-gtir 256 3 1
-addr 1 2 2
-addi 2 1 2
-seti 27 9 2
-seti 0 9 1
-addi 1 1 4
-muli 4 256 4
-gtrr 4 3 4
-addr 4 2 2
-addi 2 1 2
-seti 25 4 2
-addi 1 1 1
-seti 17 2 2
-setr 1 6 3
-seti 7 8 2
-eqrr 5 0 1
-addr 1 2 2
-seti 5 0 2
+seti 123 0 5       //  0   F=123
+bani 5 456 5       //  1   F=F&456
+eqri 5 72 5        //  2   F=F==72
+addr 5 2 2         //  3   IF 123&456==72 GOTO 5
+seti 0 0 2         //  4   GOTO 1            // seems like it should be GOTO 0, but the IP will be incremented first
+seti 0 9 5         //  5   F=0
+bori 5 65536 3     //  6   D=F|65536
+seti 7586220 4 5   //  7   F=7586220
+bani 3 255 1       //  8   B=D&255
+addr 5 1 5         //  9   F=F+B
+bani 5 16777215 5  // 10   F=F&16777215
+muli 5 65899 5     // 11   F=F*65899
+bani 5 16777215 5  // 12   F=F&16777215
+gtir 256 3 1       // 13   B=256>D
+addr 1 2 2         // 14   IF 256>D GOTO 16
+addi 2 1 2         // 15   GOTO 17
+seti 27 9 2        // 16   GOTO 28
+seti 0 9 1         // 17   B=0
+addi 1 1 4         // 18   E=B+1
+muli 4 256 4       // 19   E=E*256
+gtrr 4 3 4         // 20   E=E>D
+addr 4 2 2         // 21   IF E>D GOTO 23
+addi 2 1 2         // 22   GOTO 24
+seti 25 4 2        // 23   GOTO 26
+addi 1 1 1         // 24   B=B+1
+seti 17 2 2        // 25   GOTO 18
+setr 1 6 3         // 26   D=B
+seti 7 8 2         // 27   GOTO 8
+eqrr 5 0 1         // 28   B=F==A
+addr 1 2 2         // 29   IF F==A GOTO 31   // if F==A halt
+seti 5 0 2         // 30   GOTO 6

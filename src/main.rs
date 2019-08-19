@@ -1,3 +1,5 @@
+// https://github.com/rust-lang/cargo/issues/3591#issuecomment-475701083
+//#![ allow( dead_code, unused_imports, unused_variables ) ]
 #[macro_use] extern crate itertools;
 #[macro_use] extern crate lazy_static;
 extern crate chrono;
@@ -66,6 +68,7 @@ mod aoc17;
 mod aoc18;
 mod aoc19;
 mod aoc20;
+mod aoc21;
 
 fn main() {
     println!(); // split build output from runtime output
@@ -96,6 +99,7 @@ fn main() {
         18 => aoc18::advent(),
         19 => aoc19::advent(),
         20 => aoc20::advent(),
+        21 => aoc21::advent(),
         x => {
             eprintln!("Day {} hasn't happened yet.", x);
             ::std::process::exit(1);

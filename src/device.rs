@@ -190,6 +190,84 @@ mod program_tests {
     }
 }
 
+pub trait Debugger {
+    fn on_exec(&mut self, ip: usize) -> bool { let _=ip; unimplemented!(); }
+
+    fn on_exec_registers(&mut self, ip: usize, pre: [usize; 6], post: [usize; 6]) -> bool {
+        let _=pre; let _=post;
+        self.on_exec(ip)
+    }
+
+    fn on_halt(&mut self, ip: usize) { let _=ip; }
+}
+
+struct NoopDebugger;
+impl Debugger for NoopDebugger {
+    fn on_exec(&mut self, _: usize) -> bool { true }
+}
+
+pub struct ExecCounter {
+    counts: BTreeMap<usize, usize>,
+}
+
+#[allow(dead_code)]
+impl ExecCounter {
+    pub fn new() -> ExecCounter {
+        ExecCounter { counts: BTreeMap::new() }
+    }
+
+    pub fn counts(&self) -> &BTreeMap<usize, usize> {
+        &self.counts
+    }
+
+    pub fn total(&self) -> usize {
+        self.counts.values().sum()
+    }
+}
+
+impl Debugger for ExecCounter {
+    fn on_exec(&mut self, ip: usize) -> bool {
+        let count = self.counts.entry(ip).or_insert(0);
+        *count += 1;
+        true
+    }
+
+    fn on_halt(&mut self, ip: usize) {
+        self.counts.entry(ip).or_insert(0);
+    }
+}
+
+pub struct ExecLogger {
+    steps: usize,
+    halt_after: usize,
+    should_log: Box<Fn(usize, usize) -> bool>,
+}
+
+#[allow(dead_code)]
+impl ExecLogger {
+    pub fn new(halt_after: usize, should_log: Box<Fn(usize, usize) -> bool>) -> ExecLogger {
+        ExecLogger{ steps: 0, halt_after, should_log }
+    }
+
+    pub fn halt_after(halt_after: usize) -> ExecLogger {
+        ExecLogger::new(halt_after, Box::new(|_, _| true))
+    }
+}
+
+impl Debugger for ExecLogger {
+    fn on_exec_registers(&mut self, ip: usize, pre: [usize; 6], post: [usize; 6]) -> bool {
+        self.steps += 1;
+        if (self.should_log)(ip, self.steps) {
+            println!("{}:{}\t{:?}\t->\t{:?}", ip, self.steps, pre, post);
+        }
+        self.steps <= self.halt_after
+    }
+
+    fn on_halt(&mut self, ip: usize) {
+        println!("HALT: {}", ip);
+    }
+}
+
 pub struct Device {
     regs: [usize; 6],
     ip: usize,
@@ -204,27 +282,33 @@ impl Device {
         self.regs
     }
 
-    pub fn run_program(&mut self, program: &Program) -> BTreeMap<usize, usize> {
-        let mut execution_counts = BTreeMap::new();
+    pub fn run_program(&mut self, program: &Program) {
+        self.debug_program(program, &mut NoopDebugger);
+    }
+
+    pub fn debug_program(&mut self, program: &Program, debugger: &mut impl Debugger) {
         loop {
             if let Some(ip_reg) = program.ip_register {
                 self.regs[ip_reg] = self.ip;
             }
-            // Ensure there's an entry even if the instruction doesn't exist (i.e. we're halting)
-            let exec_count = execution_counts.entry(self.ip).or_insert(0);
             match program.instructions.get(self.ip) {
                 Some(instruction) => {
-                    *exec_count += 1;
+                    let prior_state = self.get_registers();
                     self.exec(instruction);
+                    let post_state = self.get_registers();
+                    let proceed = debugger.on_exec_registers(self.ip, prior_state, post_state);
+                    if !proceed { break; }
                 },
-                None => break,
+                None => {
+                    debugger.on_halt(self.ip);
+                    break;
+                },
             }
             if let Some(ip_reg) = program.ip_register {
                 self.ip = self.regs[ip_reg];
             }
             self.ip += 1; // will be written back to the register in the next loop
         }
-        execution_counts
     }
 
     fn exec(&mut self, i: &Instruction) {

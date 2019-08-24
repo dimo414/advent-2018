@@ -47,6 +47,7 @@ macro_rules! parameterized_test {
 mod error;
 mod device;
 mod euclid;
+mod pathfinding;
 
 mod aoc1;
 mod aoc2;
@@ -77,7 +78,7 @@ fn main() {
         println!("Usage: {} DAY_OF_ADVENT", args[0]);
         return;
     }
-    let day: u32 = args[1].parse().unwrap();
+    let day: u32 = args[1].parse().expect("Should be a natural number");
     match day {
         1 => aoc1::advent(),
         2 => aoc2::advent(),

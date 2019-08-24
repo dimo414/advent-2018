@@ -2,8 +2,9 @@
 // Other resources:
 //   https://crates.io/crates/euclid - https://doc.servo.org/src/euclid/point.rs.html
 mod point {
+    use super::*;
     use std::fmt;
-    use std::ops::{Add,AddAssign};
+    use std::ops::{Add,AddAssign,Sub};
     use regex::Regex;
     use std::str::FromStr;
     use crate::error::ParseError;
@@ -20,6 +21,7 @@ mod point {
     }
 
     impl Point {
+        // TODO delete this, use (P1-P2).grid_distance()
         pub fn grid_distance(&self, other: Point) -> u32 {
             let dx = self.x - other.x;
             let dy = self.y - other.y;
@@ -33,34 +35,54 @@ mod point {
         }
     }
 
-    impl Add<&super::Vector> for Point {
+    impl Add<&Vector> for Point {
         type Output = Point;
 
-        fn add(self, vec: &super::Vector) -> Point {
+        fn add(self, vec: &Vector) -> Point {
             point(self.x + vec.x, self.y + vec.y)
         }
     }
 
-    impl Add<super::Vector> for &Point {
+    impl Add<&Vector> for &Point {
         type Output = Point;
 
-        fn add(self, vec: super::Vector) -> Point {
+        fn add(self, vec: &Vector) -> Point {
             point(self.x + vec.x, self.y + vec.y)
         }
     }
 
-    impl Add<super::Vector> for Point {
+    impl Add<Vector> for &Point {
         type Output = Point;
 
-        fn add(self, vec: super::Vector) -> Point {
+        fn add(self, vec: Vector) -> Point {
             point(self.x + vec.x, self.y + vec.y)
         }
     }
 
-    impl AddAssign<super::Vector> for Point {
-        fn add_assign(&mut self, vec: super::Vector) {
+    impl Add<Vector> for Point {
+        type Output = Point;
+
+        fn add(self, vec: Vector) -> Point {
+            point(self.x + vec.x, self.y + vec.y)
+        }
+    }
+
+    impl AddAssign<Vector> for Point {
+        fn add_assign(&mut self, vec: Vector) {
             *self = point(self.x + vec.x, self.y + vec.y);
         }
+    }
+
+    impl Sub for Point {
+        type Output = Vector;
+
+        fn sub(self, point: Point) -> Vector { vector(self.x - point.x, self.y - point.y) }
+    }
+
+    impl Sub for &Point {
+        type Output = Vector;
+
+        fn sub(self, point: &Point) -> Vector { vector(self.x - point.x, self.y - point.y) }
     }
 
     impl FromStr for Point {
@@ -133,6 +155,10 @@ mod point {
         fn add() {
             assert_eq!(point(1, 0) + super::super::vector(2, 3), point(3, 3));
         }
+        #[test]
+        fn sub() {
+            assert_eq!(point(3, 3) - point(1, 0), super::super::vector(2, 3));
+        }
     }
 }
 pub use self::point::{Point,point};
@@ -151,6 +177,20 @@ mod vector {
     #[inline]
     pub const fn vector(x: i32, y: i32) -> Vector {
         Vector { x, y }
+    }
+
+    impl Vector {
+        pub fn abs(&self) -> Vector {
+            vector(self.x.abs(), self.y.abs())
+        }
+
+        pub fn len(&self) -> f64 {
+            (self.x as f64).hypot(self.y as f64)
+        }
+
+        pub fn grid_len(&self) -> u32 {
+            (self.x.abs() + self.y.abs()) as u32
+        }
     }
 
     impl FromStr for Vector {
@@ -177,12 +217,31 @@ mod vector {
 
     #[cfg(test)]
     mod tests {
+        use super::super::point;
         use super::*;
 
         #[test]
         fn parse() {
             assert_eq!("3, 4".parse::<Vector>(), Ok(vector(3, 4)));
             assert_eq!("-3,-4".parse::<Vector>(), Ok(vector(-3, -4)));
+        }
+
+        #[test]
+        fn len() {
+            assert_eq!(vector(3, -4).len(), 5_f64);
+        }
+
+        parameterized_test!{ grid_lens, (p1, p2, d), {
+            assert_eq!((p1 - p2).grid_len(), d);
+            assert_eq!((p2 - p1).grid_len(), d);
+        }}
+        grid_lens! {
+            a: (point(1,1), point(1,1), 0),
+            b: (point(1,1), point(1,2), 1),
+            c: (point(1,1), point(2,2), 2),
+            d: (point(1,1), point(1,5), 4),
+            e: (point(1,1), point(8,3), 9),
+            f: (point(1,1), point(-1,-1), 4),
         }
     }
 }

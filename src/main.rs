@@ -47,6 +47,7 @@ macro_rules! parameterized_test {
 mod error;
 mod device;
 mod euclid;
+mod euclid3d;
 mod pathfinding;
 
 mod aoc1;
@@ -71,6 +72,7 @@ mod aoc19;
 mod aoc20;
 mod aoc21;
 mod aoc22;
+mod aoc23;
 
 fn main() {
     println!(); // split build output from runtime output
@@ -103,6 +105,7 @@ fn main() {
         20 => aoc20::advent(),
         21 => aoc21::advent(),
         22 => aoc22::advent(),
+        23 => aoc23::advent(),
         x => {
             eprintln!("Day {} hasn't happened yet.", x);
             ::std::process::exit(1);

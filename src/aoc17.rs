@@ -83,12 +83,9 @@ mod scan {
         }
 
         fn rebound(&mut self) {
-            // Four searches isn't ideal, but it's fine
-            let min_x = self.clay.iter().map(|p| p.x).min().expect("isn't empty");
-            let max_x = self.clay.iter().map(|p| p.x).max().expect("isn't empty");
-            let min_y = self.clay.iter().map(|p| p.y).min().expect("isn't empty");
-            let max_y = self.clay.iter().map(|p| p.y).max().expect("isn't empty");
-            self.bounds = Some((point(min_x-1, min_y), point(max_x+1, max_y)));
+            // Include one left and right of the actual bounds, for flow
+            self.bounds = Point::bounding_box(self.clay.iter().cloned())
+                .map(|(min, max)| (point(min.x-1, min.y), point(max.x+1, max.y)));
         }
 
         pub fn spring(&self) -> Point {

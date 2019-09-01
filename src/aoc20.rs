@@ -242,7 +242,7 @@ mod ast {
                 assert!(p.x <= q.x);
                 assert!(p.y <= q.y);
                 // verify the next node is one step away
-                assert_eq!(p.grid_distance(q), 1);
+                assert_eq!((p-q).grid_len(), 1);
                 from.insert(p);
                 to.insert(q);
             });

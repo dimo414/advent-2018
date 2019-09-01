@@ -20,12 +20,22 @@ mod point {
         Point { x, y }
     }
 
+
     impl Point {
-        // TODO delete this, use (P1-P2).grid_distance()
-        pub fn grid_distance(&self, other: Point) -> u32 {
-            let dx = self.x - other.x;
-            let dy = self.y - other.y;
-            (dx.abs() + dy.abs()) as u32
+        pub const ORIGIN: Point = point(0, 0);
+
+        pub fn bounding_box(points: impl IntoIterator<Item = Point>) -> Option<(Point, Point)> {
+            points.into_iter().fold(None, |r , c|
+                match r {
+                    Some((min, max)) => {
+                        Some((
+                            point(std::cmp::min(min.x, c.x), std::cmp::min(min.y, c.y)),
+                            point(std::cmp::max(max.x, c.x), std::cmp::max(max.y, c.y))
+                        ))
+                    },
+                    None => Some((c, c)),
+                }
+            )
         }
 
         pub fn in_bounds(&self, min: Point, max: Point) -> bool {
@@ -128,18 +138,9 @@ mod point {
         }
 
         #[test]
-        fn grid_distances() {
-            let check_distance = |p1: Point, p2: Point, d: u32| {
-                assert_eq!(p1.grid_distance(p2), d);
-                assert_eq!(p2.grid_distance(p1), d);
-            };
-
-            check_distance(point(1,1), point(1,1), 0);
-            check_distance(point(1,1), point(1,2), 1);
-            check_distance(point(1,1), point(2,2), 2);
-            check_distance(point(1,1), point(1,5), 4);
-            check_distance(point(1,1), point(8,3), 9);
-            check_distance(point(1,1), point(-1,-1), 4);
+        fn bounding() {
+            let points = vec!(point(1, 2), point(2, 3), point(0, 5));
+            assert_eq!(Point::bounding_box(points), Some((point(0, 2), point(2, 5))));
         }
 
         #[test]

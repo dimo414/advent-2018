@@ -49,7 +49,7 @@ fn populate_distances(grid: &mut taxicab::Grid<Coordinate>, start_point: Point) 
             // eager copy so the reference isn't passed into the closure
             let label = label.to_string();
             for point in grid.points_iter() {
-                let distance = point.grid_distance(start_point);
+                let distance = (point - start_point).grid_len();
                 grid.get_entry(point)
                     .and_modify(|e| {
                         match e {
@@ -155,7 +155,7 @@ fn sum_distances(coords: &Vec<Point>) -> taxicab::Grid<u32> {
     }
 
     for point in grid.points_iter() {
-        let sum: u32 = coords.iter().map(|c| c.grid_distance(point)).sum();
+        let sum: u32 = coords.iter().map(|&c| (c - point).grid_len()).sum();
         grid.insert(point, sum);
     }
     grid

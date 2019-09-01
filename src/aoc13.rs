@@ -142,11 +142,10 @@ mod track {
             }
 
             let mut out = String::new();
-            // Two searches isn't ideal, but it's fine
-            let max_x = self.tracks.keys().map(|p| p.x).max().expect("isn't empty");
-            let max_y = self.tracks.keys().map(|p| p.y).max().expect("isn't empty");
-            for y in 0..max_y+1 {
-                for x in 0..max_x+1 {
+            let (_, max) = Point::bounding_box(self.tracks.keys().cloned())
+                .expect("tracks is not empty");
+            for y in 0..max.y+1 {
+                for x in 0..max.x+1 {
                     let coord = point(x, y);
                     if let Some(c) = self.carts.get(&coord) {
                         assert!(self.tracks.contains_key(&coord));

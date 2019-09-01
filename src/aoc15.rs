@@ -104,9 +104,8 @@ mod cave {
         }
 
         fn move_all_units(&mut self) {
-            // Not sure why to_owned() doesn't work here
-            let mut units: Vec<Point> = self.units.keys().map(|p| *p).collect();
-                // TODO same sort_by used in aoc13, pull it out?
+            let mut units: Vec<Point> = self.units.keys().cloned().collect();
+            // TODO same sort_by used in aoc13, pull it out?
             units.sort_by(|p1, p2|
                 p1.y.cmp(&p2.y).then_with(|| p1.x.cmp(&p2.x)));
 
@@ -252,12 +251,11 @@ mod cave {
             }
 
             let mut out = String::new();
-            // Two searches isn't ideal, but it's fine
-            let max_x = self.squares.iter().map(|p| p.x).max().expect("isn't empty");
-            let max_y = self.squares.iter().map(|p| p.y).max().expect("isn't empty");
+            let (_, max) = Point::bounding_box(self.squares.iter().cloned())
+                .expect("squares is non-empty");
             // exceed max by 1 to show outer boundary walls
-            for y in 0..max_y+2 {
-                for x in 0..max_x+2 {
+            for y in 0..max.y+2 {
+                for x in 0..max.x+2 {
                     let coord = point(x, y);
                     if self.squares.contains(&coord) {
                         match self.units.get(&coord) {

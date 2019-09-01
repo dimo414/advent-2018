@@ -170,12 +170,10 @@ mod landscape {
             }
 
             let mut out = String::new();
-            // Two searches isn't ideal, but it's fine
-            let max_x = self.acres.keys().map(|p| p.x).max().expect("isn't empty");
-            let max_y = self.acres.keys().map(|p| p.y).max().expect("isn't empty");
-
-            for y in 0..max_y+1 {
-                for x in 0..max_x+1 {
+            let (_, max) = Point::bounding_box(self.acres.keys().cloned())
+                .expect("acres is not-empty");
+            for y in 0..max.y+1 {
+                for x in 0..max.x+1 {
                     let coord = point(x, y);
                     let c = match self.acres.get(&coord) {
                         Some(State::OPEN) => '.',

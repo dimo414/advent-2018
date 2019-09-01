@@ -38,7 +38,7 @@ fn count_reachable(source: &Nanobot, nanobots: &[Nanobot]) -> usize {
 // to practically search. Using a heap as done here might have helped, but the loss of precision
 // from scaling would likely get in the way.
 fn find_most_reachable_coord(nanobots: &[Nanobot]) -> Option<Point> {
-    let (min, max) = Point::bounding_box(&nanobots.iter().map(|n| n.pos()).collect::<Vec<_>>())
+    let (min, max) = Point::bounding_box(nanobots.iter().map(|n| n.pos()))
         .expect("No nanobots found");
     let region = Region::from_min_max(min, max);
     let initial_score = Score::new(region, nanobots);

@@ -25,9 +25,8 @@ mod point {
     impl Point {
         pub const ORIGIN: Point = point(0, 0, 0);
 
-        // TODO copy to euclid mod and replace existing min/max logic
-        pub fn bounding_box(points: &[Point]) -> Option<(Point, Point)> {
-            points.iter().fold(None, |r , &c|
+        pub fn bounding_box(points: impl IntoIterator<Item = Point>) -> Option<(Point, Point)> {
+            points.into_iter().fold(None, |r , c|
                 match r {
                     Some((min, max)) => {
                         Some((
@@ -144,7 +143,7 @@ mod point {
         #[test]
         fn bounding() {
             let points = vec!(point(1, 2, 3), point(2, 3, 4), point(0, 5, 3));
-            assert_eq!(Point::bounding_box(&points), Some((point(0, 2, 3), point(2, 5, 4))));
+            assert_eq!(Point::bounding_box(points), Some((point(0, 2, 3), point(2, 5, 4))));
         }
 
         #[test]

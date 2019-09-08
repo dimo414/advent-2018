@@ -13,32 +13,16 @@ fn read_data(path: &str) -> Battle {
 }
 
 fn increase_attack_damage(path: &str) -> (u32, u32) {
-    let mut boost_max = 1;
+    // This could use exponential/binary search but in practice linear is perfectly fast
+    let mut boost = 1;
     loop {
         let mut battle = read_data(path);
-        battle.set_boost(boost_max);
-        if battle.fight().1 == 0 { // infection is dead
-            break;
+        battle.set_boost(boost);
+        let result = battle.fight();
+        if result.1 == 0 { // infection is dead
+            return (boost, result.0);
         }
-        boost_max *= 2;
-    }
-    let mut boost_range = (boost_max / 2 + 1, boost_max);
-    loop {
-        let mid_boost = {
-            let (min, max) = boost_range;
-            (max-min)/2 + min
-        };
-        let mut battle = read_data(path);
-        battle.set_boost(mid_boost);
-        let remaining_units = battle.fight();
-        if remaining_units.1 == 0 { // infection is dead
-            if mid_boost == boost_range.0 {
-                return (mid_boost, remaining_units.0);
-            }
-            boost_range = (boost_range.0, mid_boost);
-        } else {
-            boost_range = (mid_boost+1, boost_range.1);
-        }
+        boost += 1;
     }
 }
 

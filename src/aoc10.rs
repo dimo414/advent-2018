@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use std::cmp;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use crate::euclid::{point,Point,Vector};
@@ -22,23 +21,7 @@ fn read_data(path: &str) -> Vec<Star> {
 }
 
 fn bounding_box(stars: &Vec<Star>) -> (Point, Point) {
-    if stars.is_empty() {
-        panic!("No stars");
-    }
-
-    // https://github.com/rust-lang/rfcs/issues/372
-    let mut min_x = stars[0].position.x;
-    let mut min_y = stars[0].position.y;
-    let mut max_x = min_x;
-    let mut max_y = min_y;
-
-    for star in stars[1..].iter() {
-        min_x = cmp::min(min_x, star.position.x);
-        min_y = cmp::min(min_y, star.position.y);
-        max_x = cmp::max(max_x, star.position.x);
-        max_y = cmp::max(max_y, star.position.y);
-    }
-    (point(min_x, min_y), point(max_x, max_y))
+    Point::bounding_box(stars.iter().map(|s| s.position)).expect("No stars")
 }
 
 fn area(min: Point, max: Point) -> u64 {
@@ -70,7 +53,7 @@ fn stars_to_string(bounds: (Point, Point), stars: &Vec<Star>) -> String {
 // Not sure if there's a good way to pass in an &Vec<Star> instead
 fn find_message(stars: Vec<Star>) -> (u32, String) {
     let mut stars = stars;
-    let mut bounds = bounding_box(&stars);
+    let mut bounds = Point::bounding_box(stars.iter().map(|s| s.position)).unwrap();
     let mut steps = 0;
     loop {
         let next_stars: Vec<_> = stars.iter().map(Star::step).collect();
@@ -154,13 +137,6 @@ mod tests {
     #[test]
     fn read_file() {
         assert!(read_data(REAL_DATA).len() > 0);
-    }
-
-    #[test]
-    fn bounding() {
-        let points = vec!(point(-2,5), point(-3, 2), point(4, -2));
-        let stars: Vec<_> = points.into_iter().map(|p| Star::new(p, vector(4,5))).collect();
-        assert_eq!(bounding_box(&stars), (point(-3,-2), point(4,5)));
     }
 
     #[test]

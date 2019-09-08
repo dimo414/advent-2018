@@ -17,6 +17,7 @@ fn read_data() -> String {
 
 fn increase_attack_power(input: &str) -> (u32, Race, u32, u32, u32){
     let mut attack_power = 3;
+    // This could use exponential/binary search but in practice linear is perfectly fast
     loop {
         attack_power += 1;
         let mut cave: Cave = input.parse().expect("IMPOSSIBLE");

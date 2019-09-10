@@ -105,7 +105,7 @@ fn main() {
         18 => aoc18::advent(),
         19 => aoc19::advent(),
         20 => aoc20::advent(),
-        21 => aoc21::advent(),
+        21 => aoc21::advent(&args[2..]),
         22 => aoc22::advent(),
         23 => aoc23::advent(),
         24 => aoc24::advent(),

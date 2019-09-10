@@ -3,7 +3,7 @@ use crate::device::{Device, Program, Debugger};
 use std::collections::HashSet;
 use std::time::Instant;
 
-pub fn advent() {
+pub fn advent(args: &[String]) {
     // See the data file for more notes and comments
     let program: Program = read_file();
     println!("First F: {}", find_first_f_value(&program));
@@ -13,8 +13,12 @@ pub fn advent() {
     let stop = Instant::now() - start;
     println!("  Took: {:?}", stop);
 
+    if args.is_empty() {
+        return;
+    }
+
     if cfg!(debug_assertions) {
-        println!("WARNING: without --release this will take a while...");
+        println!("WARNING: without --release this will take quite a while...");
     }
     let start = Instant::now();
     println!("Actual last F:   {}", find_last_f_value(&program));

@@ -43,7 +43,7 @@ impl Opcode {
             EQIR,
             EQRI,
             EQRR];
-        OPCODES.into_iter()
+        OPCODES.iter()
     }
 }
 
@@ -109,7 +109,7 @@ impl FromStr for Instruction {
 mod instruction_tests {
     use super::*;
 
-    parameterized_test! { parse_instruction, (s, expected), {
+    parameterized_test::create! { parse_instruction, (s, expected), {
         assert_eq!(s.parse::<Instruction>(), Ok(expected));
     }}
     parse_instruction! {
@@ -240,12 +240,12 @@ impl Debugger for ExecCounter {
 pub struct ExecLogger {
     steps: usize,
     halt_after: usize,
-    should_log: Box<Fn(usize, usize) -> bool>,
+    should_log: Box<dyn Fn(usize, usize) -> bool>,
 }
 
 #[allow(dead_code)]
 impl ExecLogger {
-    pub fn new(halt_after: usize, should_log: Box<Fn(usize, usize) -> bool>) -> ExecLogger {
+    pub fn new(halt_after: usize, should_log: Box<dyn Fn(usize, usize) -> bool>) -> ExecLogger {
         ExecLogger{ steps: 0, halt_after, should_log }
     }
 

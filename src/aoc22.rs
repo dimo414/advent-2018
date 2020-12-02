@@ -74,8 +74,8 @@ mod cave {
         pub fn risk_to_target(&self) -> u32 {
             let target = self.target;
             let mut sum = 0;
-            for x in {0..target.x+1} {
-                for y in {0..target.y+1} {
+            for x in 0..target.x+1 {
+                for y in 0..target.y+1 {
                     sum += self.risk(point(x, y));
                 }
             }

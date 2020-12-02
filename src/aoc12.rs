@@ -144,7 +144,7 @@ mod pots {
 
         pub fn score(&self) -> i64 {
             let mut sum = 0;
-            for i in { 0..self.state.len() } {
+            for i in 0..self.state.len() {
                 if self.state[i] {
                     sum += i as i64 - self.offset;
                 }

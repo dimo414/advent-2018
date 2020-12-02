@@ -35,7 +35,7 @@ impl Debugger for StopAtInstruction {
 fn sum_of_factors(n: usize) -> usize {
     let sqrt_n = (n as f64).sqrt() as usize;
     let mut sum = 0;
-    for i in {1..sqrt_n} {
+    for i in 1..sqrt_n {
         if n % i == 0 {
             sum += i + n/i;
         }

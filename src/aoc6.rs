@@ -126,11 +126,11 @@ fn find_largest_enclosed_area(labels: &BTreeMap<String, Point>, grid: &taxicab::
     };
 
     let (min, max) = grid.bounds().expect("No points in empty grid");
-    for x in {min.x..max.x} {
+    for x in min.x..max.x {
         remove_label(grid.get(point(x, min.y)));
         remove_label(grid.get(point(x, max.y)));
     }
-    for y in {min.y..max.y} {
+    for y in min.y..max.y {
         remove_label(grid.get(point(min.x, y)));
         remove_label(grid.get(point(max.x, y)));
     }

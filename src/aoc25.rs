@@ -168,7 +168,7 @@ mod tests {
     #[test]
     fn read_file() { read_data(); }
 
-    parameterized_test!{ examples, (coords, constellations), {
+    parameterized_test::create!{ examples, (coords, constellations), {
         let coords: Vec<Point> = coords.iter().map(|s| s.parse().expect("valid")).collect();
         assert_eq!(num_constellations(coords), constellations);
     }}

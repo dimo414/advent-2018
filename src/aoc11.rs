@@ -16,8 +16,8 @@ fn power_level(x: isize, y: isize, grid_serial: u32) -> i32 {
 
 fn populate_power_grid(grid_serial: u32) -> Grid {
     let mut grid = Grid::new(301, 301);
-    for x in {1..grid.width() as isize} {
-        for y in {1..grid.height() as isize} {
+    for x in 1..grid.width() as isize {
+        for y in 1..grid.height() as isize {
             *grid.get_mut(x, y).unwrap() = power_level(x, y, grid_serial);
         }
     }
@@ -26,11 +26,11 @@ fn populate_power_grid(grid_serial: u32) -> Grid {
 
 fn populate_power_regions(power_grid: &Grid, region_size: usize) -> Grid {
     let mut region_grid = Grid::new(power_grid.width(), power_grid.height());
-    for x in {1..region_grid.width() as isize} {
-        for y in {1..region_grid.height() as isize} {
+    for x in 1..region_grid.width() as isize {
+        for y in 1..region_grid.height() as isize {
             let power = power_grid[(x, y)];
-            for xshift in {0..region_size as i32} {
-                for yshift in {0..region_size as i32} {
+            for xshift in 0..region_size as i32 {
+                for yshift in 0..region_size as i32 {
                     let x = x as i32 - xshift;
                     let y = y as i32 - yshift;
                     if let Some(v) = region_grid.get_mut(x as isize, y as isize) {
@@ -47,8 +47,8 @@ fn find_high_power_region(region_grid: &Grid) -> (isize, isize) {
     let mut max_cords = (0,0);
     let mut max_power = -1000;
 
-    for x in {1..region_grid.width() as isize} {
-        for y in { 1..region_grid.width() as isize } {
+    for x in 1..region_grid.width() as isize {
+        for y in 1..region_grid.width() as isize {
             let power = region_grid[(x, y)];
             if max_power < power {
                 max_cords = (x, y);
@@ -61,16 +61,16 @@ fn find_high_power_region(region_grid: &Grid) -> (isize, isize) {
 }
 
 fn widen_square(values: &Grid, result: &mut Grid, square_length: isize) {
-    for x in {1..values.width() as isize} {
-        for y in {1..values.height() as isize} {
+    for x in 1..values.width() as isize {
+        for y in 1..values.height() as isize {
             let value = values[(x, y)];
-            for x_ring in {x-square_length+1..x+1} {
+            for x_ring in x-square_length+1..x+1 {
                 if let Some(v) = result.get_mut(x_ring, y-square_length+1) {
                     *v += value;
                 }
             }
 
-            for y_ring in {y-square_length+2..y+1} { // don't double-count
+            for y_ring in y-square_length+2..y+1 { // don't double-count
                 if let Some(v) = result.get_mut(x-square_length+1, y_ring) {
                     *v += value;
                 }
@@ -84,10 +84,10 @@ fn find_high_power_region_size(power_grid: &Grid, max: isize) -> (isize, isize, 
     let mut max_power = -1000;
 
     let mut region_grid = Grid::new(power_grid.width(), power_grid.height());
-    for region_size in {1..max+1} {
+    for region_size in 1..max+1 {
         widen_square(&power_grid, &mut region_grid, region_size);
-        for x in { 1..region_grid.width() as isize } {
-            for y in { 1..region_grid.height() as isize } {
+        for x in 1..region_grid.width() as isize {
+            for y in 1..region_grid.height() as isize {
                 let power = region_grid[(x, y)];
                 if max_power < power {
                     max_cords_size = (x, y, region_size);
@@ -210,8 +210,8 @@ mod tests {
 
     fn copy_region(source: &Grid, min: (isize, isize), max: (isize, isize)) -> Grid {
         let mut result = Grid::new((max.0 - min.0 + 1) as usize, (max.1 - min.1 + 1) as usize);
-        for x in {min.0..max.0+1} {
-            for y in {min.1..max.1+1} {
+        for x in min.0..max.0+1 {
+            for y in min.1..max.1+1 {
                 *result.get_mut(x-min.0, y-min.1).expect("should exist") = source[(x,y)];
             }
         }

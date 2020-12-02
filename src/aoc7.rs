@@ -125,9 +125,10 @@ mod topology {
 
             let first_empty_key = self.peek_all()
                 .next()
-                .expect("Cycle detected");
-            // Not sure how to avoid this .clone()
-            Some(self.pop_exact(&first_empty_key.clone()))
+                .expect("Cycle detected")
+                // Not sure how to avoid this .clone()
+                .clone();
+            Some(self.pop_exact(&first_empty_key))
         }
 
         pub fn pop_exact(&mut self, c: &T) -> T {
@@ -180,7 +181,7 @@ mod scheduler {
         topo: Topology<T>,
         concurrency: u32,
         progress: HashMap<T, u32>,
-        cost_fn: Box<Fn(T) -> u32>,
+        cost_fn: Box<dyn Fn(T) -> u32>,
     }
 
     impl <T: Clone + Hash + Ord> Scheduler<T> {

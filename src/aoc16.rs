@@ -190,7 +190,7 @@ mod opcode_finder {
             create_sample();
         }
 
-        parameterized_test!{ compose, (input, output, expected_code), {
+        parameterized_test::create!{ compose, (input, output, expected_code), {
             let mut finder = create_sample();
             // consider a second operation that narrows us down to one
             let count = finder.consider(input, [9, 2, 1, 2], output);
@@ -211,7 +211,7 @@ pub use self::opcode_finder::Finder;
 mod tests {
     use super::*;
 
-    parameterized_test!{ parse_arr, (s, expected), {
+    parameterized_test::create!{ parse_arr, (s, expected), {
         assert_eq!(to_arr(s), Ok(expected));
     }}
     parse_arr! {

@@ -444,7 +444,7 @@ mod cave {
             assert_eq!(cave.counts(), (4, 0, 4));
         }
 
-        parameterized_test!{ combats, (input, result, winner, rounds, health), {
+        parameterized_test::create!{ combats, (input, result, winner, rounds, health), {
             let mut cave: Cave = input.parse().unwrap();
             let outcome = cave.combat();
             assert_eq!(cave.to_string(), result);
@@ -471,7 +471,7 @@ mod cave {
                 Race::Goblin, 20, 937),
         }
 
-        parameterized_test!{ combats_with_power, (input, attack_power, result, rounds, health), {
+        parameterized_test::create!{ combats_with_power, (input, attack_power, result, rounds, health), {
             let mut cave: Cave = input.parse().unwrap();
             cave.set_elf_attack_power(attack_power);
             let outcome = cave.combat();
@@ -589,7 +589,7 @@ mod tests {
     #[test]
     fn read_file() { read_data().parse::<Cave>().unwrap(); }
 
-    parameterized_test!{ attack_power, (input, attack_power, rounds, health), {
+    parameterized_test::create!{ attack_power, (input, attack_power, rounds, health), {
         let outcome = increase_attack_power(input);
         assert_eq!(outcome, (attack_power, Race::Elf, rounds, health, rounds*health));
     }}

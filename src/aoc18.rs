@@ -67,7 +67,7 @@ mod landscape {
                 Some(size) => minutes % size,
                 None => minutes,
             };
-            for _ in {0..minutes} {
+            for _ in 0..minutes {
                 self.tick_impl();
             }
         }
@@ -129,8 +129,8 @@ mod landscape {
 
         fn neighbors(&self, coord: &Point) -> Vec<State> {
             let mut result = Vec::new();
-            for x in {-1..2} {
-                for y in {-1..2} {
+            for x in -1..2 {
+                for y in -1..2 {
                     if x == 0 && y == 0 { continue; }
                     if let Some(state) = self.acres.get(&(coord + vector(x, y))) {
                         result.push(*state);

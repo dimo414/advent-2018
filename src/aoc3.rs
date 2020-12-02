@@ -71,8 +71,8 @@ mod tests {
     fn record_claims() {
         let expected = {
             let mut expected = grid::Grid::new(11, 9);
-            for x in { 3..8 } {
-                for y in { 2..6 } {
+            for x in 3..8 {
+                for y in 2..6 {
                     expected.incr(x, y);
                 }
             }

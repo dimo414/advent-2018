@@ -17,7 +17,7 @@ fn simulate(players: u32, high_marble: u32) -> u32 {
     ring.push(0);
 
     //print_ring(0, cur_pos, &ring);
-    for marble in {1..high_marble+1} {
+    for marble in 1..high_marble+1 {
         let player = marble % players;
         if marble % 23 == 0 {
             let seven_counterclockwise_of_cur = (cur_pos + ring.len() - 8) % (ring.len()) + 1; // NEGATIVES???
@@ -52,7 +52,7 @@ fn simulate_generic<R>(players: u32, high_marble: u32, ring: &mut R) -> u32 wher
     ring.insert(0, 0);
 
     //print_ring(0, cur_pos, &ring);
-    for marble in {1..high_marble+1} {
+    for marble in 1..high_marble+1 {
         let player = marble % players;
         if marble % 23 == 0 {
             let seven_counterclockwise_of_cur = (cur_pos + ring.len() - 8) % (ring.len()) + 1; // NEGATIVES???
@@ -164,7 +164,7 @@ impl RingBuf for MultiVecBacked {
 fn print_ring(player: u32, cur_pos: usize, ring: &Vec<u32>) {
     let mut out = String::new();
     write!(out, "[{:2}]", player).unwrap();
-    for i in {0..ring.len()} {
+    for i in 0..ring.len() {
         if i == cur_pos {
             write!(out, "({:2})", ring[i]).unwrap();
         } else {

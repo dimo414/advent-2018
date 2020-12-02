@@ -23,7 +23,7 @@ fn metadata_sum_impl(data: &[usize]) -> (usize, usize) {
     let num_metadata = data[1];
     let mut next_index = 2;
     let mut child_sum = 0;
-    for _ in {0..num_children} {
+    for _ in 0..num_children {
         let (next_node, s) = metadata_sum_impl(&data[next_index..]);
         next_index += next_node;
         child_sum += s;
@@ -50,13 +50,13 @@ fn metadata_value_impl(data: &[usize]) -> (usize, usize) {
     }
 
     let mut child_values = HashMap::new();
-    for i in {0..num_children} {
+    for i in 0..num_children {
         let (next_node, v) = metadata_value_impl(&data[next_index..]);
         next_index += next_node;
         child_values.insert(i+1, v);
     }
     let mut value_sum: usize = 0;
-    for i in {0..num_metadata} {
+    for i in 0..num_metadata {
         value_sum += child_values.get(&data[next_index + i]).unwrap_or(&0);
     }
     let next_node = next_index + num_metadata;

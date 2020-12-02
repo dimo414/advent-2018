@@ -36,8 +36,8 @@ fn stars_to_string(bounds: (Point, Point), stars: &Vec<Star>) -> String {
     assert!(area(bounds.0, bounds.1) < 10000, "Area too big, violates sanity-check");
     let points: HashSet<_> = stars.iter().map(|s| s.position).collect();
     let mut out = String::new();
-    for y in {bounds.0.y-1..bounds.1.y+2} {
-        for x in {bounds.0.x-1..bounds.1.x+2} {
+    for y in bounds.0.y-1..bounds.1.y+2 {
+        for x in bounds.0.x-1..bounds.1.x+2 {
             let p = point(x, y);
             if points.contains(&p) {
                 out.push('#');

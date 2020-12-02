@@ -192,7 +192,7 @@ mod ast {
     mod tests {
         use super::*;
 
-        parameterized_test!{ to_tokens, (regex, expected_pos), {
+        parameterized_test::create!{ to_tokens, (regex, expected_pos), {
             let (path, pos) = tokenize(&regex.chars().collect::<Vec<_>>()).unwrap();
             println!("{}:{}", path, pos);
             assert_eq!(path.to_string(), regex[..pos]);
@@ -210,7 +210,7 @@ mod ast {
             deep_nested_group: ("(N|(W|(NS|E))|NE)", 17),
         }
 
-        parameterized_test!{ invalid_tokens, regex, {
+        parameterized_test::create!{ invalid_tokens, regex, {
             tokenize(&regex.chars().collect::<Vec<_>>()).unwrap_err();
         }}
         invalid_tokens! {
@@ -218,7 +218,7 @@ mod ast {
             bad_nesting: "N(S",
         }
 
-        parameterized_test!{ to_ast, regex, {
+        parameterized_test::create!{ to_ast, regex, {
             let ast = regex.parse::<Ast>();
             println!("{:?}", ast);
             assert_eq!(regex.parse::<Ast>().unwrap().to_string(), regex);
@@ -260,7 +260,7 @@ pub use self::ast::Ast;
 mod tests {
     use super::*;
 
-    parameterized_test!{ min_paths, (regex, expected), {
+    parameterized_test::create!{ min_paths, (regex, expected), {
             let ast: Ast = regex.parse().unwrap();
             let distances = plot(&ast);
             let max = *distances.values().max().unwrap();

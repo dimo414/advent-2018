@@ -373,7 +373,7 @@ mod group {
     mod tests {
         use super::*;
 
-        parameterized_test!{ parse, (s, expected), {
+        parameterized_test::create!{ parse, (s, expected), {
             let group = s.parse::<Group>();
             assert_eq!(group, Ok(expected));
         }}

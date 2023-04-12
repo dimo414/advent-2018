@@ -113,6 +113,7 @@ fn sleepiest_guardminute(naps: &Vec<nap::Nap>) -> (u32, u32) {
 #[cfg(test)]
 mod tests {
     use chrono::naive::NaiveDate;
+    use chrono::NaiveDateTime;
     use super::*;
 
     #[test]
@@ -159,22 +160,27 @@ mod tests {
 
     #[test]
     fn validate_naps() {
+        fn mkdate(year: i32, month: u32, day: u32) -> NaiveDate { NaiveDate::from_ymd_opt(year, month, day).unwrap() }
+        fn mktime(date: &NaiveDate, hour: u32, min: u32, sec: u32) -> NaiveDateTime {
+            date.and_hms_opt(hour, min, sec).unwrap()
+        }
+
         let naps = example_naps();
 
-        let nov_1 = NaiveDate::from_ymd(1518, 11, 1);
-        let nov_2 = NaiveDate::from_ymd(1518, 11, 2);
-        let nov_3 = NaiveDate::from_ymd(1518, 11, 3);
-        let nov_4 = NaiveDate::from_ymd(1518, 11, 4);
-        let nov_5 = NaiveDate::from_ymd(1518, 11, 5);
+        let nov_1 = mkdate(1518, 11, 1);
+        let nov_2 = mkdate(1518, 11, 2);
+        let nov_3 = mkdate(1518, 11, 3);
+        let nov_4 = mkdate(1518, 11, 4);
+        let nov_5 = mkdate(1518, 11, 5);
 
         //date.and_hms(0, 0, 0)
         let expected = vec!(
-            nap::Nap { id: 10, start: nov_1.and_hms(0, 5, 0), end: nov_1.and_hms(0, 25, 0) },
-            nap::Nap { id: 10, start: nov_1.and_hms(0, 30, 0), end: nov_1.and_hms(0, 55, 0) },
-            nap::Nap { id: 99, start: nov_2.and_hms(0, 40, 0), end: nov_2.and_hms(0, 50, 0) },
-            nap::Nap { id: 10, start: nov_3.and_hms(0, 24, 0), end: nov_3.and_hms(0, 29, 0) },
-            nap::Nap { id: 99, start: nov_4.and_hms(0, 36, 0), end: nov_4.and_hms(0, 46, 0) },
-            nap::Nap { id: 99, start: nov_5.and_hms(0, 45, 0), end: nov_5.and_hms(0, 55, 0) });
+            nap::Nap { id: 10, start: mktime(&nov_1, 0, 5, 0), end: mktime(&nov_1, 0, 25, 0) },
+            nap::Nap { id: 10, start: mktime(&nov_1, 0, 30, 0), end: mktime(&nov_1, 0, 55, 0) },
+            nap::Nap { id: 99, start: mktime(&nov_2, 0, 40, 0), end: mktime(&nov_2, 0, 50, 0) },
+            nap::Nap { id: 10, start: mktime(&nov_3, 0, 24, 0), end: mktime(&nov_3, 0, 29, 0) },
+            nap::Nap { id: 99, start: mktime(&nov_4, 0, 36, 0), end: mktime(&nov_4, 0, 46, 0) },
+            nap::Nap { id: 99, start: mktime(&nov_5, 0, 45, 0), end: mktime(&nov_5, 0, 55, 0) });
         assert_eq!(naps, expected);
     }
 
@@ -306,7 +312,7 @@ mod event {
         #[test]
         fn date_parse() {
             let timestamp = NaiveDateTime::parse_from_str("1518-11-01 00:00", "%Y-%m-%d %H:%M");
-            assert_eq!(timestamp, Ok(NaiveDate::from_ymd(1518, 11, 1).and_hms(0, 0, 0)));
+            assert_eq!(timestamp, Ok(NaiveDate::from_ymd_opt(1518, 11, 1).unwrap().and_hms_opt(0, 0, 0).unwrap()));
         }
 
         #[test]
@@ -315,17 +321,17 @@ mod event {
                 "[1518-11-01 00:00] Guard #10 begins shift",
                 "[1518-11-01 00:05] falls asleep",
                 "[1518-11-01 00:25] wakes up");
-            let date = NaiveDate::from_ymd(1518, 11, 1);
+            let date = NaiveDate::from_ymd_opt(1518, 11, 1).unwrap();
 
             assert_eq!(shift.parse::<Event>(),
                        Ok(Event {
-                           timestamp: date.and_hms(0, 0, 0), event: EventType::StartsShift(10) }));
+                           timestamp: date.and_hms_opt(0, 0, 0).unwrap(), event: EventType::StartsShift(10) }));
             assert_eq!(asleep.parse::<Event>(),
                        Ok(Event {
-                           timestamp: date.and_hms(0, 5, 0), event: EventType::FallsAsleep }));
+                           timestamp: date.and_hms_opt(0, 5, 0).unwrap(), event: EventType::FallsAsleep }));
             assert_eq!(awake.parse::<Event>(),
                        Ok(Event {
-                           timestamp: date.and_hms(0, 25, 0), event: EventType::WakesUp }));
+                           timestamp: date.and_hms_opt(0, 25, 0).unwrap(), event: EventType::WakesUp }));
         }
     }
 }
